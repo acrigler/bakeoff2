@@ -62,12 +62,19 @@ void drawRect(Rect r, int hex, String input) {
 }
 
 void drawScroll(Rect r, int hex) {
+  float xPos = scrollLoc;
   drawRect(r, hex);
-  for (int i = 0; i < 7; i++) {
-    fill(#808080);
-    if (i == scrollLoc) fill(#FF0000); 
-    ellipse((float)r.left+(tw*12/7) * i + 40, (float)r.centerY(), 20, 20);
-  }
+  fill(#FF0000);
+  // keep ellipse within bounds of box
+  //if (scrollLoc > scroll.left + 20 && scrollLoc < scroll.right - 20) xPos = scrollLoc;
+  if (scrollLoc <= scroll.left) xPos = scroll.left + 20;
+  else if (scrollLoc >= scroll.right) xPos = scroll.right - 20;
+  ellipse((float)xPos, (float)r.centerY(), 40, 40);
+  //for (int i = 0; i < 7; i++) {
+  //  fill(#808080);
+  //  if (i == scrollLoc) fill(#FF0000); 
+  //  ellipse((float)r.left+(tw*12/7) * i + 40, (float)r.centerY(), 20, 20);
+  //}
 }
 
 //You can modify anything in here. This is just a basic implementation.
@@ -192,7 +199,8 @@ void mouseDragged()
       }
     }
   }
-  scrollLoc = (((int)letters[0] - 97) % 26) / 4;
+  //scrollLoc = (((int)letters[0] - 97) % 26) / 4;
+  scrollLoc = mouseX;
 }
 
 
