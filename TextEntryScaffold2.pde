@@ -34,7 +34,7 @@ Rect auto3 = new Rect(margin + tw*6, margin + tw*10, margin + tw*6, margin + tw*
 
 char[] lettersFull = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 int indexOffset = 0; // start at left
-Rect[] scrollRects = new Rect[22]; // 22 because that's the max offset between abcd and wxyz
+Rect[] scrollRects = new Rect[23]; // 23 is number of shifts required to go from abcd to wxyz
 int letterScrollWidth = scroll.width() / (scrollRects.length - 1);
 char[] letters = {'a', 'b', 'c', 'd'};
 //You can modify anything in here. This is just a basic implementation.
@@ -85,6 +85,7 @@ void drawScroll(Rect r, int hex) {
   float xPos = scrollLoc;
   drawRect(r, hex);
   
+  // Note: we don't actually need to show this; just for debugging purposes at the moment (although it may be cool to highlight a bar instead of the circle)
   for (int i = 0; i < scrollRects.length; i++) {
     drawRectNoStroke(scrollRects[i], 255-10*i);
   }
@@ -208,29 +209,40 @@ void mouseDragged()
 {
   if (input.contains(mouseX, mouseY)) //check if click occured in letter area
   {
-    counter++;
-    // indicator that user is moving in a particular direction
-    // pmouseX = previous mouse x
-    if (counter == 7) {
-      counter = 0;
-      
-      
-      
-      if (mouseX > pmouseX) //check if click in left button
+    
+    // find which scrollRect user is in
+    for (int i = 0; i < scrollRects.length; i++)
+    {
+      if (scrollRects[i].contains(mouseX, mouseY))
       {
-        for (int i = 0; i < 4; i++) {
-          // this is what allows for rotation (I'm going to want to get rid of most of this code (including pmouseX comparison) to map letters directly to position)
-          letters[i] = (char((((int)letters[i] + 1 - 97) % 26) + 97));
-        }
-      }
-
-      if (mouseX < pmouseX) //check if click in right button
-      {
-        for (int i = 0; i < 4; i++) {
-          letters[i] = (char((((int)letters[i] - 1 - 97 + 26) % 26) + 97));
+        for (int j = 0; j < 4; j++) {
+          letters[j] = lettersFull[i+j];
         }
       }
     }
+    
+    //counter++;
+    //// indicator that user is moving in a particular direction
+    //// pmouseX = previous mouse x
+    //if (counter == 7) {
+    //  counter = 0;
+      
+      
+      
+    //  if (mouseX > pmouseX) //check if click in left button
+    //  {
+    //    for (int i = 0; i < 4; i++) {
+    //      letters[i] = (char((((int)letters[i] + 1 - 97) % 26) + 97));
+    //    }
+    //  }
+
+    //  if (mouseX < pmouseX) //check if click in right button
+    //  {
+    //    for (int i = 0; i < 4; i++) {
+    //      letters[i] = (char((((int)letters[i] - 1 - 97 + 26) % 26) + 97));
+    //    }
+    //  }
+    //}
   }
   //scrollLoc = (((int)letters[0] - 97) % 26) / 4;
   scrollLoc = mouseX;
