@@ -47,7 +47,8 @@ void setup()
     if (i == 0) {
       scrollRects[i] = new Rect(margin, margin + tw*6, margin + letterScrollWidth*2, margin + tw*8);
     } else if (i == scrollRects.length -1) {
-      scrollRects[i] = new Rect(margin + letterScrollWidth*(i+1), margin + tw*6, margin + letterScrollWidth*(i+3), margin + tw*8);
+      // scroll.width() - (int-->float conversion of letterScrollWidth) = 5, which is where that magic number comes from
+      scrollRects[i] = new Rect(margin + letterScrollWidth*(i+1), margin + tw*6, margin + letterScrollWidth*(i+3)+5, margin + tw*8);
     } else {
       scrollRects[i] = new Rect(margin + letterScrollWidth*(i+1), margin + tw*6, margin + letterScrollWidth*(i+2), margin + tw*8);
     }
