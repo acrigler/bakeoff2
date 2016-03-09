@@ -33,6 +33,7 @@ Rect auto2 = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
 Rect auto3 = new Rect(margin + tw*6, margin + tw*10, margin + tw*6, margin + tw*12);
 
 char[] lettersFull = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+int selectedScrollRectIndex = 0;
 Rect[] scrollRects = new Rect[23]; // 23 is number of shifts required to go from abcd to wxyz
 int letterScrollWidth = scroll.width() / (scrollRects.length + 2); // +2 instead of -1 to allow double width for 'a' and 'z'
 char[] letters = {'a', 'b', 'c', 'd'};
@@ -90,14 +91,18 @@ void drawScroll(Rect r, int hex) {
   
   // Note: we don't actually need to show this; just for debugging purposes at the moment (although it may be cool to highlight a bar instead of the circle)
   for (int i = 0; i < scrollRects.length; i++) {
-    drawRectNoStroke(scrollRects[i], 255-10*i);
+    if (i == selectedScrollRectIndex) {
+      drawRectNoStroke(scrollRects[i], #FF0000);
+    } else {
+      drawRectNoStroke(scrollRects[i], 255-10*i);
+    }
   }
   // keep ellipse within bounds of box
   //if (scrollLoc > scroll.left + 20 && scrollLoc < scroll.right - 20) xPos = scrollLoc;
-  if (scrollLoc <= scroll.left) xPos = scroll.left + 20;
-  else if (scrollLoc >= scroll.right) xPos = scroll.right - 20;
-  fill(#FF0000);
-  ellipse((float)xPos, (float)r.centerY(), 40, 40);
+  //if (scrollLoc <= scroll.left) xPos = scroll.left + 20;
+  //else if (scrollLoc >= scroll.right) xPos = scroll.right - 20;
+  //fill(#FF0000);
+  //ellipse((float)xPos, (float)r.centerY(), 40, 40);
   //for (int i = 0; i < 7; i++) {
   //  fill(#808080);
   //  if (i == scrollLoc) fill(#FF0000); 
@@ -178,6 +183,20 @@ boolean didMouseClick(float x, float y, float w, float h) //simple function to d
   return (mouseX > x && mouseX<x+w && mouseY>y && mouseY<y+h); //check to see if it is in button bounds
 }
 
+void scrollPositionChanged()
+{
+  for (int i = 0; i < scrollRects.length; i++)
+  {
+    if (scrollRects[i].contains(mouseX, mouseY))
+    {
+      for (int j = 0; j < 4; j++) {
+        letters[j] = lettersFull[i+j];
+      }
+      selectedScrollRectIndex = i;
+      break;
+    }
+  }
+}
 
 void mousePressed()
 {
@@ -191,22 +210,8 @@ void mousePressed()
     currentTyped = currentTyped.substring(0, currentTyped.length()-1);
   }
   
-  // this code (except for drawScroll) is copied from below (mousePressed() doesn't call draw?)
-  // can't get ellipse to move over for some reason
-  for (int i = 0; i < scrollRects.length; i++)
-  {
-    if (scrollRects[i].contains(mouseX, mouseY))
-    {
-      for (int j = 0; j < 4; j++) {
-        letters[j] = lettersFull[i+j];
-      }
-      //Draw scroll bar
-      //drawScroll(scroll, #FFFFFF);
-      break;
-    }
-  }
+  scrollPositionChanged();
   
-
   /*
   if (letter1=="_") //if underscore, consider that a space bar
    
@@ -226,20 +231,10 @@ int counter = 0;
 
 void mouseDragged() 
 {
-  if (input.contains(mouseX, mouseY)) //check if click occured in letter area
+  if (input.contains(mouseX, mouseY))
   {
     
-    // find which scrollRect user is in
-    for (int i = 0; i < scrollRects.length; i++)
-    {
-      if (scrollRects[i].contains(mouseX, mouseY))
-      {
-        for (int j = 0; j < 4; j++) {
-          letters[j] = lettersFull[i+j];
-        }
-        break;
-      }
-    }
+    scrollPositionChanged();
     
     //counter++;
     //// indicator that user is moving in a particular direction
