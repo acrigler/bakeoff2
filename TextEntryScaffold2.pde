@@ -187,6 +187,22 @@ void mousePressed()
   if (delete.contains(mouseX, mouseY)) {
     currentTyped = currentTyped.substring(0, currentTyped.length()-1);
   }
+  
+  // this code (except for drawScroll) is copied from below (mousePressed() doesn't call draw?)
+  // can't get ellipse to move over for some reason
+  for (int i = 0; i < scrollRects.length; i++)
+  {
+    if (scrollRects[i].contains(mouseX, mouseY))
+    {
+      for (int j = 0; j < 4; j++) {
+        letters[j] = lettersFull[i+j];
+      }
+      //Draw scroll bar
+      //drawScroll(scroll, #FFFFFF);
+      break;
+    }
+  }
+  
 
   /*
   if (letter1=="_") //if underscore, consider that a space bar
@@ -218,6 +234,7 @@ void mouseDragged()
         for (int j = 0; j < 4; j++) {
           letters[j] = lettersFull[i+j];
         }
+        break;
       }
     }
     
