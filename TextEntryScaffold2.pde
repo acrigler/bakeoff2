@@ -32,6 +32,10 @@ Rect auto1 = new Rect(margin + tw*6, margin + tw*8, margin + tw*12, margin +tw*1
 Rect auto2 = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
 Rect auto3 = new Rect(margin + tw*6, margin + tw*10, margin + tw*6, margin + tw*12);
 
+char[] lettersFull = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+int indexOffset = 0; // start at left
+Rect[] scrollRects = new Rect[22]; // 22 because that's the max offset between abcd and wxyz
+int letterScrollWidth = scroll.width() / (scrollRects.length - 1);
 char[] letters = {'a', 'b', 'c', 'd'};
 //You can modify anything in here. This is just a basic implementation.
 void setup()
@@ -39,6 +43,15 @@ void setup()
   for (int i = 0; i < 4; i++) {
     rects[i] = new Rect(margin + (tw*3)*i, margin + (tw*2), margin + ((tw*3) * (i+1)), margin + tw*6);
   }
+  
+  for (int i = 0; i < scrollRects.length; i++) {
+    scrollRects[i] = new Rect(margin + letterScrollWidth*i, margin + tw*6, margin + letterScrollWidth*(i+1), margin + tw*8);
+   //scrollRects[i] = new Rect(margin + letterScrollWidth*i, margin + tw*6, margin + letterScrollWidth*(i+1), margin + tw*8);
+  }
+  
+  //for (int i = 0; i < 22; i++) {
+  //   drawRect(scrollRects[i], 255 - i*10);
+  //}
 
   phrases = loadStrings("phrases2.txt"); //load the phrase set into memory
   Collections.shuffle(Arrays.asList(phrases)); //randomize the order of the phrases
@@ -55,6 +68,13 @@ void drawRect(Rect r, int hex) {
   rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
 }
 
+// I don't feel like changing every instance of drawRect so I'm just making another one
+void drawRectNoStroke(Rect r, int val) {
+  fill(val);
+  noStroke();
+  rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
+}
+
 void drawRect(Rect r, int hex, String input) {
   drawRect(r, hex);
   fill(0);
@@ -64,11 +84,15 @@ void drawRect(Rect r, int hex, String input) {
 void drawScroll(Rect r, int hex) {
   float xPos = scrollLoc;
   drawRect(r, hex);
-  fill(#FF0000);
+  
+  for (int i = 0; i < scrollRects.length; i++) {
+    drawRectNoStroke(scrollRects[i], 255-10*i);
+  }
   // keep ellipse within bounds of box
   //if (scrollLoc > scroll.left + 20 && scrollLoc < scroll.right - 20) xPos = scrollLoc;
   if (scrollLoc <= scroll.left) xPos = scroll.left + 20;
   else if (scrollLoc >= scroll.right) xPos = scroll.right - 20;
+  fill(#FF0000);
   ellipse((float)xPos, (float)r.centerY(), 40, 40);
   //for (int i = 0; i < 7; i++) {
   //  fill(#808080);
@@ -84,6 +108,8 @@ void draw()
 
   // image(watch,-200,200);
   drawRect(input, #808080); //input area should be 2" by 2"
+  
+  
 
   if (finishTime!=0)
   {
@@ -135,6 +161,7 @@ void draw()
     textSize(30);
     //Draw scroll bar
     drawScroll(scroll, #FFFFFF);
+    
     fill(255, 0, 0);
     //rect(200, 200, sizeOfInputArea/2, sizeOfInputArea/2); //draw left red button
     fill(0, 255, 0);
@@ -182,11 +209,17 @@ void mouseDragged()
   if (input.contains(mouseX, mouseY)) //check if click occured in letter area
   {
     counter++;
+    // indicator that user is moving in a particular direction
+    // pmouseX = previous mouse x
     if (counter == 7) {
       counter = 0;
+      
+      
+      
       if (mouseX > pmouseX) //check if click in left button
       {
         for (int i = 0; i < 4; i++) {
+          // this is what allows for rotation (I'm going to want to get rid of most of this code (including pmouseX comparison) to map letters directly to position)
           letters[i] = (char((((int)letters[i] + 1 - 97) % 26) + 97));
         }
       }
