@@ -33,9 +33,8 @@ Rect auto2 = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
 Rect auto3 = new Rect(margin + tw*6, margin + tw*10, margin + tw*6, margin + tw*12);
 
 char[] lettersFull = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-int indexOffset = 0; // start at left
 Rect[] scrollRects = new Rect[23]; // 23 is number of shifts required to go from abcd to wxyz
-int letterScrollWidth = scroll.width() / (scrollRects.length - 1);
+int letterScrollWidth = scroll.width() / (scrollRects.length + 2); // +2 instead of -1 to allow double width for 'a' and 'z'
 char[] letters = {'a', 'b', 'c', 'd'};
 //You can modify anything in here. This is just a basic implementation.
 void setup()
@@ -43,15 +42,18 @@ void setup()
   for (int i = 0; i < 4; i++) {
     rects[i] = new Rect(margin + (tw*3)*i, margin + (tw*2), margin + ((tw*3) * (i+1)), margin + tw*6);
   }
-  
+    
   for (int i = 0; i < scrollRects.length; i++) {
-    scrollRects[i] = new Rect(margin + letterScrollWidth*i, margin + tw*6, margin + letterScrollWidth*(i+1), margin + tw*8);
+    if (i == 0) {
+      scrollRects[i] = new Rect(margin, margin + tw*6, margin + letterScrollWidth*2, margin + tw*8);
+    } else if (i == scrollRects.length -1) {
+      scrollRects[i] = new Rect(margin + letterScrollWidth*(i+1), margin + tw*6, margin + letterScrollWidth*(i+3), margin + tw*8);
+    } else {
+      scrollRects[i] = new Rect(margin + letterScrollWidth*(i+1), margin + tw*6, margin + letterScrollWidth*(i+2), margin + tw*8);
+    }
+    
    //scrollRects[i] = new Rect(margin + letterScrollWidth*i, margin + tw*6, margin + letterScrollWidth*(i+1), margin + tw*8);
   }
-  
-  //for (int i = 0; i < 22; i++) {
-  //   drawRect(scrollRects[i], 255 - i*10);
-  //}
 
   phrases = loadStrings("phrases2.txt"); //load the phrase set into memory
   Collections.shuffle(Arrays.asList(phrases)); //randomize the order of the phrases
