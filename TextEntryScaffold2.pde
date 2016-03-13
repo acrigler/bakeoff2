@@ -18,19 +18,36 @@ final int DPIofYourDeviceScreen = 480; //you will need to look up the DPI or PPI
 final int sizeOfInputArea = DPIofYourDeviceScreen*1; //aka, 1.0 inches square!
 final int tw = sizeOfInputArea/12; //Used because fractions confuse me
 final int margin = 200;
+int buttonMarginBottom = tw / 4;
+int buttonMarginHalf = tw / 8;
 
 int scrollLoc = 0;
-Rect input = new Rect(margin, margin, margin + tw*12, margin + tw*12);
-Rect delete = new Rect(margin, margin, margin + tw*6, margin + tw * 2);
-Rect space = new Rect(margin + tw * 6, margin, margin + tw * 12, margin + tw * 2);
+Rect input = new Rect(
+                      margin, 
+                      margin, 
+                      margin + tw*12, 
+                      margin + tw*12
+                      );
+Rect delete = new Rect(
+                       margin, 
+                       margin, 
+                       margin + tw*6 - buttonMarginHalf, 
+                       margin + tw * 2 - buttonMarginBottom
+                       );
+Rect space = new Rect(
+                      margin + tw * 6 + buttonMarginHalf, 
+                      margin, 
+                      margin + tw * 12, 
+                      margin + tw * 2 - buttonMarginBottom
+                      );
 
 Rect[] rects = new Rect[4];
-Rect scroll = new Rect(margin, margin + tw*6, margin + tw*12, margin + tw*8);
-
-Rect auto0 = new Rect(margin, margin + tw*8, margin + tw*6, margin + tw*10);
-Rect auto1 = new Rect(margin + tw*6, margin + tw*8, margin + tw*12, margin +tw*10);
-Rect auto2 = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
-Rect auto3 = new Rect(margin + tw*6, margin + tw*10, margin + tw*6, margin + tw*12);
+Rect scroll = new Rect(
+                        margin, 
+                        margin + tw*6, 
+                        margin + tw*12, 
+                        margin + tw*8
+                       );
 
 char[] lettersFull = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 int selectedScrollRectIndex = 0;
@@ -40,21 +57,42 @@ char[] letters = {'a', 'b', 'c', 'd'};
 //You can modify anything in here. This is just a basic implementation.
 void setup()
 {
+  int x1, y1, x2, y2;
   for (int i = 0; i < 4; i++) {
-    rects[i] = new Rect(margin + (tw*3)*i, margin + (tw*2), margin + ((tw*3) * (i+1)), margin + tw*6);
+    x1 = margin + (tw*3)*i;
+    y1 = margin + (tw*2);
+    x2 = margin + ((tw*3) * (i+1));
+    y2 = margin + tw*6 - buttonMarginBottom;
+    // handle margins between letter buttons
+    if (i < 3) x2 -= buttonMarginHalf;
+    if (i > 0) x1 += buttonMarginHalf;
+    rects[i] = new Rect(x1, y1, x2, y2);
   }
     
   for (int i = 0; i < scrollRects.length; i++) {
     if (i == 0) {
-      scrollRects[i] = new Rect(margin, margin + tw*6, margin + letterScrollWidth*2, margin + tw*8);
+      scrollRects[i] = new Rect(
+                                margin, 
+                                margin + tw*6, 
+                                margin + letterScrollWidth*2, 
+                                margin + tw*8
+                                );
     } else if (i == scrollRects.length -1) {
       // scroll.width() - (int-->float conversion of letterScrollWidth) = 5, which is where that magic number comes from
-      scrollRects[i] = new Rect(margin + letterScrollWidth*(i+1), margin + tw*6, margin + letterScrollWidth*(i+3)+5, margin + tw*8);
+      scrollRects[i] = new Rect(
+                                margin + letterScrollWidth*(i+1), 
+                                margin + tw*6, 
+                                margin + letterScrollWidth*(i+3)+5, 
+                                margin + tw*8
+                                );
     } else {
-      scrollRects[i] = new Rect(margin + letterScrollWidth*(i+1), margin + tw*6, margin + letterScrollWidth*(i+2), margin + tw*8);
-    }
-    
-   //scrollRects[i] = new Rect(margin + letterScrollWidth*i, margin + tw*6, margin + letterScrollWidth*(i+1), margin + tw*8);
+      scrollRects[i] = new Rect(
+                                margin + letterScrollWidth*(i+1), 
+                                margin + tw*6, 
+                                margin + letterScrollWidth*(i+2), 
+                                margin + tw*8
+                                );
+    }    
   }
 
   phrases = loadStrings("phrases2.txt"); //load the phrase set into memory
@@ -86,9 +124,7 @@ void drawRect(Rect r, int hex, String input) {
 }
 
 void drawScroll(Rect r, int hex) {
-  float xPos = scrollLoc;
   drawRect(r, hex);
-  
   // Note: we don't actually need to show this; just for debugging purposes at the moment (although it may be cool to highlight a bar instead of the circle)
   for (int i = 0; i < scrollRects.length; i++) {
     if (i == selectedScrollRectIndex) {
@@ -97,28 +133,13 @@ void drawScroll(Rect r, int hex) {
       drawRectNoStroke(scrollRects[i], 255-10*i);
     }
   }
-  // keep ellipse within bounds of box
-  //if (scrollLoc > scroll.left + 20 && scrollLoc < scroll.right - 20) xPos = scrollLoc;
-  //if (scrollLoc <= scroll.left) xPos = scroll.left + 20;
-  //else if (scrollLoc >= scroll.right) xPos = scroll.right - 20;
-  //fill(#FF0000);
-  //ellipse((float)xPos, (float)r.centerY(), 40, 40);
-  //for (int i = 0; i < 7; i++) {
-  //  fill(#808080);
-  //  if (i == scrollLoc) fill(#FF0000); 
-  //  ellipse((float)r.left+(tw*12/7) * i + 40, (float)r.centerY(), 20, 20);
-  //}
 }
 
-//You can modify anything in here. This is just a basic implementation.
 void draw()
 {
   background(0); //clear background
 
-  // image(watch,-200,200);
   drawRect(input, #808080); //input area should be 2" by 2"
-  
-  
 
   if (finishTime!=0)
   {
@@ -170,11 +191,8 @@ void draw()
     textSize(30);
     //Draw scroll bar
     drawScroll(scroll, #FFFFFF);
-    
-    fill(255, 0, 0);
-    //rect(200, 200, sizeOfInputArea/2, sizeOfInputArea/2); //draw left red button
+
     fill(0, 255, 0);
-    //rect(200+sizeOfInputArea/2, 200, sizeOfInputArea/2, sizeOfInputArea/2); //draw right green button
   }
 }
 
@@ -211,14 +229,6 @@ void mousePressed()
   }
   
   scrollPositionChanged();
-  
-  /*
-  if (letter1=="_") //if underscore, consider that a space bar
-   
-   else if (letter1=='`' & currentTyped.length()>0) //if `, treat that as a delete command
-   //currentTyped = currentTyped.substring(0, currentTyped.length()-1);
-   else if (letter1!='`') //if not any of the above cases, add the current letter to the typed string
-   currentTyped+=letter1;*/
 
   //You are allowed to have a next button outside the 2" area
   if (didMouseClick(800, 00, 200, 200)) //check if click is in next button
@@ -231,35 +241,7 @@ int counter = 0;
 
 void mouseDragged() 
 {
-  if (input.contains(mouseX, mouseY))
-  {
-    
-    scrollPositionChanged();
-    
-    //counter++;
-    //// indicator that user is moving in a particular direction
-    //// pmouseX = previous mouse x
-    //if (counter == 7) {
-    //  counter = 0;
-      
-      
-      
-    //  if (mouseX > pmouseX) //check if click in left button
-    //  {
-    //    for (int i = 0; i < 4; i++) {
-    //      letters[i] = (char((((int)letters[i] + 1 - 97) % 26) + 97));
-    //    }
-    //  }
-
-    //  if (mouseX < pmouseX) //check if click in right button
-    //  {
-    //    for (int i = 0; i < 4; i++) {
-    //      letters[i] = (char((((int)letters[i] - 1 - 97 + 26) % 26) + 97));
-    //    }
-    //  }
-    //}
-  }
-  //scrollLoc = (((int)letters[0] - 97) % 26) / 4;
+  if (input.contains(mouseX, mouseY)) scrollPositionChanged();
   scrollLoc = mouseX;
 }
 
