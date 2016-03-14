@@ -3,64 +3,64 @@ import java.util.Collections;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.Set;
+ 
 public class Autocomplete {
 	
 	Trie trie = new Trie();
-	public Autocomplete(String filename) {
-		try {
-			FileReader file = new FileReader("/Users/ameliacrigler/Documents/05391/bakeoff2/data/wordlist2.txt");
-			BufferedReader reader = new BufferedReader(file);
-    		String line = null;
-    		while ((line = reader.readLine()) != null ) {
-    			String text = "";
-    			for (char c : line.toCharArray()) {
-    				if ('a' <= c && c <= 'z') 
-	    				text += c;
-    			}
-    			
-        		this.trie.add(new Word(text, 0, "NN"));
-        		
-		    }
-		} catch (IOException x) {
-    		System.err.format("IOException: %s%n", x);
+	String[] currentOptions;
+	int n;
+	public Autocomplete(int n) {
+		currentOptions = new String[n];
+		this.n = n;
+		for (int i = 0; i < n; i++) {
+			currentOptions[i] = "";
 		}
 
+	}
+	public void addWords(String[] words) {
+		for (String word : words) {
+
+    		String text = "";
+    		for (char c : word.toCharArray()) {
+    			if ('a' <= c && c <= 'z') 
+	    			text += c;
+    			}
+    			
+        	this.trie.add(new Word(text, 0, "NN"));
+        		
+		    }
 
 	}
-	public Autocomplete() {
-		//test trie with a few words
-		Word[] wordlist = new Word[3];
 
-		wordlist[0] = new Word("abc", 3, "NN");
-		wordlist[1] = new Word("abe", 6, "PP");
-		wordlist[2] = new Word("efg", 2, "NN");
-		this.trie.addList(wordlist);
-	}
-	public static String[] getNCompletions(String input, int n) {
-		String[] result = new String[n];
-		if (n > 0) {
-			//filler for now
-			result[0] = input;
-			if (n > 1) result[1] = "Hello, world!";
+	public void getCompletions(String input) {
+		this.currentOptions[0] = "HI";
+		if (this.n > 0) {			
 
 			/* method returns list of possible continuations - all words with up to some 
 			 * threshold probability based on parts of speech, word frequencies, etc
 			 */
-			String[] completions = getBestCompletions(input);
-
-			for (int i = 0; i < n; i++) {
+			Map<Word, Integer> completionsMap = this.trie.findWords(input, this.n);
+			
+			
+			Word[] completions = completionsMap.keySet().toArray(new Word[completionsMap.size()]);
+			for (int i = 0; i < this.n; i++) {
 				if (i < completions.length) {
-					result[i] = completions[i];
+					this.currentOptions[i] = completions[i].text;
 				} else {	
-					result[i] = "";
+					this.currentOptions[i] = "";
 				}
 			}
-
+	
 		}
-		return result;
+
+		
 	}	
 
-	public static String[] getBestCompletions(String input) {
+	public String[] getBestCompletions(String input) {
 		String[] completions = new String[100];
 		for (int i = 0; i < input.length(); i++){
 			completions[i] = input.substring(i, i+1);

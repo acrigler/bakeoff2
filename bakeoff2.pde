@@ -1,6 +1,9 @@
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import android.graphics.Rect;
+import android.util.Log;
+import android.text.TextUtils;
 
 String[] phrases; //contains all of the phrases
 int totalTrialNum = 4; //the total number of phrases to be tested - set this low for testing. Might be ~10 for the real bakeoff!
@@ -18,7 +21,7 @@ final int DPIofYourDeviceScreen = 480; //you will need to look up the DPI or PPI
 final int sizeOfInputArea = DPIofYourDeviceScreen*1; //aka, 1.0 inches square!
 final int tw = sizeOfInputArea/12; //Used because fractions confuse me
 final int margin = 200;
-
+String printoutput = "PRINT: \n";
 int scrollLoc = 0;
 Rect input = new Rect(margin, margin, margin + tw*12, margin + tw*12);
 Rect delete = new Rect(margin, margin, margin + tw*6, margin + tw * 2);
@@ -27,10 +30,12 @@ Rect space = new Rect(margin + tw * 6, margin, margin + tw * 12, margin + tw * 2
 Rect[] rects = new Rect[4];
 Rect scroll = new Rect(margin, margin + tw*6, margin + tw*12, margin + tw*8);
 
-Rect auto0 = new Rect(margin, margin + tw*8, margin + tw*6, margin + tw*10);
-Rect auto1 = new Rect(margin + tw*6, margin + tw*8, margin + tw*12, margin +tw*10);
-Rect auto2 = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
-Rect auto3 = new Rect(margin + tw*6, margin + tw*10, margin + tw*6, margin + tw*12);
+Rect[] auto = new Rect[4];
+
+
+int numAutocompleteOptions = 4;
+String[] wordlist;
+Autocomplete autocomplete;
 
 char[] lettersFull = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 int selectedScrollRectIndex = 0;
@@ -40,6 +45,23 @@ char[] letters = {'a', 'b', 'c', 'd'};
 //You can modify anything in here. This is just a basic implementation.
 void setup()
 {
+  wordlist = loadStrings("a.txt"); //load words from memory to build trie
+  autocomplete = new Autocomplete(4);
+  String filename;
+  /*for (char c1: lettersFull) {
+    
+    filename = "lists/" + c1 + "a.txt";
+    autocomplete.addWords(loadStrings(filename));
+    
+    
+  }*/
+  //only add words starting with "ab" for now
+  autocomplete.addWords(loadStrings("lists/ab.txt"));
+  auto[0] = new Rect(margin, margin + tw*8, margin + tw*6, margin + tw*10);
+  auto[1] = new Rect(margin + tw*6, margin + tw*8, margin + tw*12, margin +tw*10);
+  auto[2] = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
+  auto[3] = new Rect(margin + tw*6, margin + tw*10, margin + tw*12, margin + tw*12);
+
   for (int i = 0; i < 4; i++) {
     rects[i] = new Rect(margin + (tw*3)*i, margin + (tw*2), margin + ((tw*3) * (i+1)), margin + tw*6);
   }
@@ -149,11 +171,12 @@ void draw()
     fill(255);
     text("Target:   " + currentPhrase, 70, 100); //draw the target string
     text("Entered:  " + currentTyped, 70, 140); //draw what the user has entered thus far 
+    
+    text(printoutput, 50, 800); 
     fill(255, 0, 0);
     rect(800, 00, 200, 200); //drag next button
     fill(255);
     text("NEXT > ", 850, 100); //draw next label
-
 
     //my draw code
 
@@ -167,9 +190,18 @@ void draw()
     //Draw space and delete
     drawRect(delete, #FFFFFF, "del");
     drawRect(space, #FFFFFF, "_");
+    
+    //draw autocomplete options
+    textSize(40);
+    for (int i = 0; i < 4; i++) {
+      drawRect(auto[i], #FFFFFF,   autocomplete.currentOptions[i] );
+    }
+
     textSize(30);
     //Draw scroll bar
     drawScroll(scroll, #FFFFFF);
+    
+    
     
     fill(255, 0, 0);
     //rect(200, 200, sizeOfInputArea/2, sizeOfInputArea/2); //draw left red button
@@ -210,6 +242,11 @@ void mousePressed()
     currentTyped = currentTyped.substring(0, currentTyped.length()-1);
   }
   
+  for (int i = 0 ; i < numAutocompleteOptions; i++ ) {
+    if (auto[i].contains(mouseX, mouseY)) addRestOfWord(i);
+  }
+  if (currentTyped.length() > 0) callAutocorrect();
+  
   scrollPositionChanged();
   
   /*
@@ -226,8 +263,14 @@ void mousePressed()
     nextTrial(); //if so, advance to next trial
   }
 }
-
+void addRestOfWord(int i) {
+  String[] words = currentTyped.split(" ");
+  words[words.length-1] = autocomplete.currentOptions[i];
+  currentTyped = TextUtils.join(" ", words) + " ";
+  callAutocorrect();
+}
 int counter = 0;
+
 
 void mouseDragged() 
 {
@@ -317,7 +360,24 @@ void nextTrial()
   //currentPhrase = "abc"; // uncomment this to override the test phrase (useful for debugging)
 }
 
+String currentWord(String typed) {
+  if (typed.charAt(typed.length()-1) == ' ') return "";
+  String[] words = typed.split(" ");
+  System.out.println(words[words.length-1]);
+  return words[words.length - 1];
+}
 
+
+void callAutocorrect() {
+  String word = currentWord(currentTyped);
+  if (word != "") {
+    autocomplete.getCompletions(word);
+  }
+}
+
+void androidPrint(String text) {
+  printoutput += text + "\n";
+}
 
 
 //=========SHOULD NOT NEED TO TOUCH THIS METHOD AT ALL!==============

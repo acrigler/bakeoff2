@@ -56,9 +56,7 @@ public class Trie {
 		private Map<Word, Integer> traverseFindWords(String prefix, int i, int minWords, Map<Word, Integer> wordsFound) {
 			if (i == prefix.length() && wordsFound.size() < minWords) {
 				if (this.words.size() > 0) {
-					System.out.println("found word: ");
 					for (Word w : this.words) {
-						System.out.println(w.text);
 						wordsFound.put(w, 0);
 					}
 					if (wordsFound.size() >= minWords) return wordsFound;
@@ -67,7 +65,6 @@ public class Trie {
 					Node child = this.children[j];
 					if (child == null) continue;
 					else {
-						System.out.println("trying " + (char)(j + 'a'));
 						wordsFound = child.traverseFindWords(prefix, i, minWords, wordsFound);
 						if (wordsFound.size() >= minWords) return wordsFound;
 					}
@@ -100,7 +97,10 @@ public class Trie {
 
 	public Map<Word, Integer> findWords(String prefix, int n) {
 		Map<Word,Integer> words = new HashMap<Word,Integer>();
-		return this.root.traverseFindWords(prefix, 0, n, words);
+
+		Map<Word, Integer> words1 = this.root.traverseFindWords(prefix, 0, n, words);
+		
+		return words1;
 	}
 }
 	
