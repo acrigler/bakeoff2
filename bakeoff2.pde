@@ -45,18 +45,9 @@ char[] letters = {'a', 'b', 'c', 'd'};
 //You can modify anything in here. This is just a basic implementation.
 void setup()
 {
-  wordlist = loadStrings("a.txt"); //load words from memory to build trie
   autocomplete = new Autocomplete(4);
-  String filename;
-  /*for (char c1: lettersFull) {
-    
-    filename = "lists/" + c1 + "a.txt";
-    autocomplete.addWords(loadStrings(filename));
-    
-    
-  }*/
-  //only add words starting with "ab" for now
-  autocomplete.addWords(loadStrings("lists/ab.txt"));
+  
+  autocomplete.addWords(loadStrings("lemma.al"));
   auto[0] = new Rect(margin, margin + tw*8, margin + tw*6, margin + tw*10);
   auto[1] = new Rect(margin + tw*6, margin + tw*8, margin + tw*12, margin +tw*10);
   auto[2] = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
@@ -372,6 +363,10 @@ void callAutocorrect() {
   String word = currentWord(currentTyped);
   if (word != "") {
     autocomplete.getCompletions(word);
+  } else {
+    for (int i = 0; i < numAutocompleteOptions; i++) {
+      autocomplete.currentOptions[i] = "";
+    }
   }
 }
 

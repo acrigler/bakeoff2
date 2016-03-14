@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Set;
- 
+
 public class Autocomplete {
 	
 	Trie trie = new Trie();
@@ -22,15 +22,19 @@ public class Autocomplete {
 
 	}
 	public void addWords(String[] words) {
-		for (String word : words) {
-
-    		String text = "";
-    		for (char c : word.toCharArray()) {
-    			if ('a' <= c && c <= 'z') 
-	    			text += c;
-    			}
-    			
-        	this.trie.add(new Word(text, 0, "NN"));
+		String[] parts;
+		int rank;
+		int frequency;
+		String word;
+		String pos;
+		for (String line : words) {
+			parts = line.split(" ");
+			rank = Integer.parseInt(parts[0]);
+			frequency = Integer.parseInt(parts[1]);
+			word = parts[2].replaceAll("[^a-zA-Z ]", "").toLowerCase();
+			pos = parts[3].replaceAll("[^a-zA-Z ]", "").toUpperCase();
+    		//System.out.println("(" + word + ") (" + pos + ") (" + Integer.toString(frequency) + ")");
+        	this.trie.add(new Word(word, frequency, pos));
         		
 		    }
 
