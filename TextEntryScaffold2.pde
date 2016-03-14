@@ -225,7 +225,7 @@ void mousePressed()
     currentTyped+=" ";
   }
   if (delete.contains(mouseX, mouseY)) {
-    currentTyped = currentTyped.substring(0, currentTyped.length()-1);
+    if (currentTyped.length() > 0) currentTyped = currentTyped.substring(0, currentTyped.length()-1);
   }
   
   scrollPositionChanged();
