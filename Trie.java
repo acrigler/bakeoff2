@@ -98,9 +98,9 @@ public class Trie {
 		return this.root.lookupFromNode(word, 0);
 	}
 
-	public Map<Word, Integer> findWords(String prefix) {
+	public Map<Word, Integer> findWords(String prefix, int n) {
 		Map<Word,Integer> words = new HashMap<Word,Integer>();
-		return this.root.traverseFindWords(prefix, 0, 4, words);
+		return this.root.traverseFindWords(prefix, 0, n, words);
 	}
 }
 	
