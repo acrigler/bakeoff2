@@ -40,6 +40,11 @@ Rect space = new Rect(
                       margin + tw * 12, 
                       margin + tw * 2 - buttonMarginBottom
                       );
+                      
+Rect auto0 = new Rect(margin, margin + tw*8, margin + tw*6, margin + tw*10);
+Rect auto1 = new Rect(margin + tw*6, margin + tw*8, margin + tw*12, margin +tw*10);
+Rect auto2 = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
+Rect auto3 = new Rect(margin + tw*6, margin + tw*10, margin + tw*6, margin + tw*12);
 
 Rect[] rects = new Rect[4];
 Rect scroll = new Rect(
