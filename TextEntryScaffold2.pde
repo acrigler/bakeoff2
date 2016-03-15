@@ -122,14 +122,17 @@ void drawRectNoStroke(Rect r, int val, int index) {
   //fill(255);
   noStroke();
   rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
-  //fill(0);
-  //if (lettersFull[index] != 'w') text(lettersFull[index], (float)r.centerX(), (float)r.centerY()+5);
+  fill(0);
+  // replace to make clearer
+  if (lettersFull[index] == 'w') text('z', (float)r.centerX(), (float)r.centerY()+7);
+  if (index % 4 == 0) text(lettersFull[index], (float)r.centerX(), (float)r.centerY()+7);
+  
   //else
   //{
-  //  // Just in case someone forgets where x, y and z are (probably not best solution)
-  //  text('w', (float)r.centerX(), (float)r.top+25);
-  //  text('-', (float)r.centerX(), (float)r.centerY()+10);
-  //  text('z', (float)r.centerX(), (float)r.bottom-10);
+  // // Just in case someone forgets where x, y and z are (probably not best solution)
+  // text('w', (float)r.centerX(), (float)r.top+25);
+  // text('-', (float)r.centerX(), (float)r.centerY()+10);
+  // text('z', (float)r.centerX(), (float)r.bottom-10);
   //}
   
 }
@@ -137,7 +140,7 @@ void drawRectNoStroke(Rect r, int val, int index) {
 void drawRect(Rect r, int hex, String input) {
   drawRect(r, hex);
   fill(0);
-  text(input, (float)r.centerX(), (float)r.centerY()+30); //
+  text(input, (float)r.centerX(), (float)r.centerY()+25); //
 }
 
 void drawScroll(Rect r, int hex) {
