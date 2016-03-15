@@ -47,7 +47,7 @@ void setup()
 {
   autocomplete = new Autocomplete(4);
   
-  autocomplete.addWords(loadStrings("lemma.al"));
+  autocomplete.addWords(loadStrings("worddata.txt"));
   auto[0] = new Rect(margin, margin + tw*8, margin + tw*6, margin + tw*10);
   auto[1] = new Rect(margin + tw*6, margin + tw*8, margin + tw*12, margin +tw*10);
   auto[2] = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);

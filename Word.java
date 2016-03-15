@@ -4,7 +4,9 @@ public class Word {
 	public int frequency;
 	public String pos;
 	public Word(String word, int frequency, String pos) {
-		text = word;
+		this.text = word;
+		this.frequency = frequency;
+		this.pos = pos;
 
 	}	
 	public String text() {

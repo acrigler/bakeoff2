@@ -29,11 +29,9 @@ public class Autocomplete {
 		String pos;
 		for (String line : words) {
 			parts = line.split(" ");
-			rank = Integer.parseInt(parts[0]);
-			frequency = Integer.parseInt(parts[1]);
-			word = parts[2].replaceAll("[^a-zA-Z ]", "").toLowerCase();
-			pos = parts[3].replaceAll("[^a-zA-Z ]", "").toUpperCase();
-    		//System.out.println("(" + word + ") (" + pos + ") (" + Integer.toString(frequency) + ")");
+			frequency = Integer.parseInt(parts[0]);
+			word = parts[1].replaceAll("[^a-zA-Z ]", "").toLowerCase();
+			pos = parts[2].replaceAll("[^a-zA-Z ]", "").toUpperCase();
         	this.trie.add(new Word(word, frequency, pos));
         		
 		    }
@@ -41,19 +39,18 @@ public class Autocomplete {
 	}
 
 	public void getCompletions(String input) {
-		this.currentOptions[0] = "HI";
+
 		if (this.n > 0) {			
 
 			/* method returns list of possible continuations - all words with up to some 
 			 * threshold probability based on parts of speech, word frequencies, etc
 			 */
-			Map<Word, Integer> completionsMap = this.trie.findWords(input, this.n);
+			Map<String, Integer> completionsMap = this.trie.findWords(input, this.n);
 			
-			
-			Word[] completions = completionsMap.keySet().toArray(new Word[completionsMap.size()]);
+			String[] completions = completionsMap.keySet().toArray(new String[completionsMap.size()]);
 			for (int i = 0; i < this.n; i++) {
 				if (i < completions.length) {
-					this.currentOptions[i] = completions[i].text;
+					this.currentOptions[i] = completions[i];
 				} else {	
 					this.currentOptions[i] = "";
 				}
