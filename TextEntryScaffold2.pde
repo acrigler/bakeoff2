@@ -157,9 +157,12 @@ void drawRectNoStroke(Rect r, int val, int index) {
   noStroke();
   rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
   fill(0);
+  if (lastTypedLetter == "" || lastTypedLetter == " ")
+  {
   // replace to make clearer
   if (lettersFull[index] == 'w') text('z', (float)r.centerX(), (float)r.centerY()+7);
   if (index % 4 == 0) text(lettersFull[index], (float)r.centerX(), (float)r.centerY()+7);
+  }
   
   //else
   //{
@@ -222,7 +225,7 @@ void draw()
     fill(128);
     text("Phrase " + (currTrialNum+1) + " of " + totalTrialNum, 70, 50); //draw the trial count
     fill(255);
-    text(" Target:  " + currentPhrase, 70, 100); //draw the target string
+    text("Target:    " + currentPhrase, 70, 100); //draw the target string
     text("Entered:  " + currentTyped, 70, 140); //draw what the user has entered thus far 
     fill(255, 0, 0);
     rect(800, 00, 200, 200); //drag next button
@@ -279,6 +282,8 @@ void changeActiveLetters()
   for (int i = 0; i < 4; i++) {
     letters[i] = lettersFull[i];
   }
+  // move red bar to beginning every time active letters change to avoid confusion
+  selectedScrollRectIndex = 0;
 }
 
 void mousePressed()
@@ -300,12 +305,10 @@ void mousePressed()
     if (currentTyped.length() > 0) 
     {
       currentTyped = currentTyped.substring(0, currentTyped.length()-1);
-      if (currentTyped.length() == 0)
-      {
-        lastTypedLetter = "";
-        changeActiveLetters();
-      }
+      if (currentTyped.length() == 0) lastTypedLetter = "";
+      else lastTypedLetter = currentTyped.substring(currentTyped.length()-1); // get previously typed letter
     }
+    changeActiveLetters();
   }
   
   scrollPositionChanged();
