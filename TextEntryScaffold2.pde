@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import java.util.Collections;
 import android.graphics.Rect;
+import java.util.Map;
+import java.util.HashMap;
 
 String[] phrases; //contains all of the phrases
 int totalTrialNum = 4; //the total number of phrases to be tested - set this low for testing. Might be ~10 for the real bakeoff!
@@ -62,6 +64,36 @@ char[] letters = {'a', 'b', 'c', 'd'};
 //You can modify anything in here. This is just a basic implementation.
 void setup()
 {
+  // can't map char as key, so need to cast when checking previous letter
+  Map<String, char[]> commonLetters = new HashMap<String, char[]>();
+  commonLetters.put("a", new char[] {'n', 'r', 't', 'l', 's', 'c', 'm', 'd', 'i', 'b', 'p', 'g', 'u', 'y', 'v', 'k', 'f', 'w', 'h', 'z', 'e', 'x', 'a', 'o', 'j', 'q'});
+  commonLetters.put("c", new char[] {'o', 'a', 'h', 'e', 'k', 't', 'i', 'r', 'l', 'u', 'c', 's', 'y', 'd', 'p', 'm', 'n', 'g', 'f', 'b', 'w', 'q', 'v', 'z', 'j', 'x'});
+  commonLetters.put("b", new char[] {'a', 'e', 'l', 'o', 'i', 'r', 'u', 's', 'b', 'y', 'c', 't', 'm', 'd', 'h', 'p', 'j', 'n', 'g', 'f', 'w', 'v', 'x', 'k', 'z', 'q'});
+  commonLetters.put("e", new char[] {'r', 's', 'n', 'd', 'l', 't', 'a', 'c', 'm', 'e', 'p', 'x', 'i', 'g', 'v', 'y', 'f', 'b', 'w', 'o', 'u', 'h', 'k', 'z', 'q', 'j'});
+  commonLetters.put("d", new char[] {'e', 'i', 'a', 'o', 's', 'r', 'u', 'l', 'd', 'y', 'g', 'm', 'b', 'w', 'v', 'c', 'n', 't', 'h', 'f', 'p', 'j', 'k', 'x', 'z', 'q'});
+  commonLetters.put("g", new char[] {'e', 'a', 'r', 'i', 'o', 'h', 'u', 'l', 's', 'n', 'g', 'y', 't', 'm', 'b', 'w', 'c', 'd', 'f', 'p', 'v', 'k', 'z', 'x', 'j', 'q'});
+  commonLetters.put("f", new char[] {'i', 'o', 'e', 'a', 'r', 'f', 'l', 'u', 't', 's', 'y', 'c', 'm', 'p', 'd', 'n', 'g', 'w', 'b', 'x', 'h', 'k', 'j', 'v', 'z', 'q'});
+  commonLetters.put("i", new char[] {'n', 's', 'c', 't', 'o', 'l', 'e', 'a', 'd', 'r', 'm', 'g', 'v', 'p', 'f', 'b', 'z', 'k', 'u', 'x', 'q', 'i', 'h', 'j', 'w', 'y'});
+  commonLetters.put("h", new char[] {'e', 'a', 'o', 'i', 'u', 't', 'r', 'y', 'l', 's', 'm', 'n', 'w', 'b', 'p', 'c', 'd', 'f', 'h', 'k', 'g', 'v', 'j', 'x', 'q', 'z'});
+  commonLetters.put("k", new char[] {'e', 'i', 'a', 's', 'o', 'l', 'u', 'y', 'r', 'n', 'h', 't', 'm', 'w', 'b', 'k', 'd', 'f', 'p', 'c', 'g', 'v', 'j', 'z', 'q', 'x'});
+  commonLetters.put("j", new char[] {'a', 'o', 'e', 'u', 'i', 's', 'c', 'm', 'd', 'p', 'n', 'r', 'k', 'b', 't', 'h', 'f', 'l', 'j', 'v', 'y', 'w', 'g', 'x', 'z', 'q'});
+  commonLetters.put("m", new char[] {'a', 'e', 'i', 'o', 'p', 'u', 'b', 'm', 's', 'c', 'y', 'l', 'n', 't', 'r', 'd', 'f', 'w', 'g', 'h', 'v', 'k', 'x', 'j', 'z', 'q'});
+  commonLetters.put("l", new char[] {'e', 'i', 'a', 'l', 'o', 'y', 'u', 's', 'd', 't', 'm', 'b', 'v', 'c', 'f', 'k', 'p', 'g', 'w', 'n', 'r', 'h', 'z', 'x', 'j', 'q'});
+  commonLetters.put("o", new char[] {'n', 'r', 'l', 'u', 'm', 's', 't', 'o', 'p', 'c', 'd', 'w', 'g', 'v', 'b', 'a', 'i', 'k', 'f', 'e', 'x', 'y', 'h', 'z', 'j', 'q'});
+  commonLetters.put("n", new char[] {'g', 'e', 't', 'a', 's', 'd', 'i', 'o', 'c', 'n', 'k', 'u', 'f', 'v', 'y', 'l', 'b', 'h', 'r', 'm', 'z', 'p', 'w', 'j', 'q', 'x'});
+  commonLetters.put("q", new char[] {'u', 'i', 'a', 's', 'l', 't', 'r', 'o', 'p', 'e', 'f', 'n', 'b', 'm', 'w', 'q', 'v', 'c', 'd', 'h', 'g', 'x', 'j', 'k', 'y', 'z'});
+  commonLetters.put("p", new char[] {'e', 'a', 'r', 'o', 'i', 'l', 'h', 'p', 't', 's', 'u', 'y', 'c', 'm', 'd', 'f', 'n', 'g', 'b', 'w', 'k', 'v', 'x', 'j', 'q', 'z'});
+  commonLetters.put("s", new char[] {'t', 'e', 'i', 's', 'h', 'a', 'o', 'c', 'u', 'p', 'm', 'l', 'k', 'y', 'w', 'n', 'b', 'd', 'f', 'v', 'r', 'q', 'g', 'x', 'j', 'z'});
+  commonLetters.put("r", new char[] {'e', 'a', 'i', 'o', 's', 't', 'd', 'u', 'm', 'r', 'y', 'n', 'c', 'g', 'l', 'k', 'b', 'p', 'v', 'f', 'h', 'w', 'z', 'j', 'q', 'x'});
+  commonLetters.put("u", new char[] {'r', 'n', 's', 'l', 't', 'm', 'e', 'c', 'i', 'b', 'a', 'p', 'd', 'g', 'f', 'k', 'o', 'x', 'v', 'z', 'y', 'h', 'j', 'w', 'u', 'q'});
+  commonLetters.put("t", new char[] {'e', 'i', 'a', 'o', 'r', 'h', 's', 't', 'u', 'y', 'l', 'c', 'w', 'm', 'z', 'f', 'b', 'p', 'n', 'd', 'v', 'g', 'k', 'x', 'j', 'q'});
+  commonLetters.put("w", new char[] {'a', 'e', 'i', 'o', 'n', 's', 'h', 'r', 'l', 'y', 'b', 'd', 't', 'c', 'm', 'w', 'k', 'p', 'f', 'u', 'g', 'x', 'v', 'j', 'z', 'q'});
+  commonLetters.put("v", new char[] {'e', 'i', 'a', 'o', 's', 'r', 'u', 'd', 'c', 'l', 'm', 'y', 'p', 't', 'n', 'b', 'g', 'f', 'v', 'h', 'w', 'x', 'q', 'k', 'z', 'j'});
+  commonLetters.put("y", new char[] {'s', 'a', 'n', 'e', 'l', 'p', 'o', 'm', 'c', 't', 'r', 'd', 'i', 'b', 'u', 'w', 'g', 'f', 'h', 'k', 'v', 'z', 'y', 'x', 'j', 'q'});
+  commonLetters.put("x", new char[] {'i', 't', 'p', 'e', 'c', 'a', 'o', 'x', 'y', 'u', 's', 'm', 'h', 'f', 'l', 'r', 'b', 'd', 'v', 'w', 'g', 'n', 'k', 'q', 'j', 'z'});
+  commonLetters.put("z", new char[] {'e', 'a', 'i', 'o', 'z', 'u', 'y', 'l', 'h', 'm', 'w', 's', 't', 'b', 'd', 'n', 'c', 'r', 'k', 'v', 'f', 'p', 'g', 'j', 'q', 'x'});
+
+  
   int x1, y1, x2, y2;
   for (int i = 0; i < 4; i++) {
     x1 = margin + (tw*3)*i;
