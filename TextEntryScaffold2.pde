@@ -55,17 +55,20 @@ Rect scroll = new Rect(
                         margin + tw*12, 
                         margin + tw*8
                        );
-
+//char[] alphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 char[] lettersFull = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 int selectedScrollRectIndex = 0;
 Rect[] scrollRects = new Rect[23]; // 23 is number of shifts required to go from abcd to wxyz
 int letterScrollWidth = scroll.width() / (scrollRects.length + 2); // +2 instead of -1 to allow double width for 'a' and 'z'
 char[] letters = {'a', 'b', 'c', 'd'};
+String lastTypedLetter = "";
+Map<String, char[]> commonLetters = new HashMap<String, char[]>();
 //You can modify anything in here. This is just a basic implementation.
 void setup()
 {
   // can't map char as key, so need to cast when checking previous letter
-  Map<String, char[]> commonLetters = new HashMap<String, char[]>();
+  commonLetters.put("", new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'});
+  commonLetters.put(" ", new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'});
   commonLetters.put("a", new char[] {'n', 'r', 't', 'l', 's', 'c', 'm', 'd', 'i', 'b', 'p', 'g', 'u', 'y', 'v', 'k', 'f', 'w', 'h', 'z', 'e', 'x', 'a', 'o', 'j', 'q'});
   commonLetters.put("c", new char[] {'o', 'a', 'h', 'e', 'k', 't', 'i', 'r', 'l', 'u', 'c', 's', 'y', 'd', 'p', 'm', 'n', 'g', 'f', 'b', 'w', 'q', 'v', 'z', 'j', 'x'});
   commonLetters.put("b", new char[] {'a', 'e', 'l', 'o', 'i', 'r', 'u', 's', 'b', 'y', 'c', 't', 'm', 'd', 'h', 'p', 'j', 'n', 'g', 'f', 'w', 'v', 'x', 'k', 'z', 'q'});
@@ -92,7 +95,6 @@ void setup()
   commonLetters.put("y", new char[] {'s', 'a', 'n', 'e', 'l', 'p', 'o', 'm', 'c', 't', 'r', 'd', 'i', 'b', 'u', 'w', 'g', 'f', 'h', 'k', 'v', 'z', 'y', 'x', 'j', 'q'});
   commonLetters.put("x", new char[] {'i', 't', 'p', 'e', 'c', 'a', 'o', 'x', 'y', 'u', 's', 'm', 'h', 'f', 'l', 'r', 'b', 'd', 'v', 'w', 'g', 'n', 'k', 'q', 'j', 'z'});
   commonLetters.put("z", new char[] {'e', 'a', 'i', 'o', 'z', 'u', 'y', 'l', 'h', 'm', 'w', 's', 't', 'b', 'd', 'n', 'c', 'r', 'k', 'v', 'f', 'p', 'g', 'j', 'q', 'x'});
-
   
   int x1, y1, x2, y2;
   for (int i = 0; i < 4; i++) {
@@ -269,16 +271,41 @@ void scrollPositionChanged()
 
 }
 
+void changeActiveLetters()
+{
+  lettersFull = commonLetters.get(lastTypedLetter);
+  //System.out.println(Arrays.toString(lettersFull));
+  //letters = Arrays.copyOfRange(lettersFull, 0, 3);
+  for (int i = 0; i < 4; i++) {
+    letters[i] = lettersFull[i];
+  }
+}
+
 void mousePressed()
 {
   for (int i = 0; i < 4; i++) {
-    if (rects[i].contains(mouseX, mouseY)) currentTyped += letters[i];
+    if (rects[i].contains(mouseX, mouseY)) 
+    {
+      currentTyped += letters[i];
+      lastTypedLetter = String.valueOf(letters[i]);
+      changeActiveLetters();
+    }
   }
   if (space.contains(mouseX, mouseY)) {
     currentTyped+=" ";
+    lastTypedLetter = " ";
+    changeActiveLetters();
   }
   if (delete.contains(mouseX, mouseY)) {
-    if (currentTyped.length() > 0) currentTyped = currentTyped.substring(0, currentTyped.length()-1);
+    if (currentTyped.length() > 0) 
+    {
+      currentTyped = currentTyped.substring(0, currentTyped.length()-1);
+      if (currentTyped.length() == 0)
+      {
+        lastTypedLetter = "";
+        changeActiveLetters();
+      }
+    }
   }
   
   scrollPositionChanged();
