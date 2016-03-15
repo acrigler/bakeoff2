@@ -116,16 +116,28 @@ void drawRect(Rect r, int hex) {
 }
 
 // I don't feel like changing every instance of drawRect so I'm just making another one
-void drawRectNoStroke(Rect r, int val) {
+void drawRectNoStroke(Rect r, int val, int index) {
   fill(val);
+  //noFill();
+  //fill(255);
   noStroke();
   rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
+  //fill(0);
+  //if (lettersFull[index] != 'w') text(lettersFull[index], (float)r.centerX(), (float)r.centerY()+5);
+  //else
+  //{
+  //  // Just in case someone forgets where x, y and z are (probably not best solution)
+  //  text('w', (float)r.centerX(), (float)r.top+25);
+  //  text('-', (float)r.centerX(), (float)r.centerY()+10);
+  //  text('z', (float)r.centerX(), (float)r.bottom-10);
+  //}
+  
 }
 
 void drawRect(Rect r, int hex, String input) {
   drawRect(r, hex);
   fill(0);
-  text(input, (float)r.centerX(), (float)r.centerY()+15); //
+  text(input, (float)r.centerX(), (float)r.centerY()+30); //
 }
 
 void drawScroll(Rect r, int hex) {
@@ -133,9 +145,9 @@ void drawScroll(Rect r, int hex) {
   // Note: we don't actually need to show this; just for debugging purposes at the moment (although it may be cool to highlight a bar instead of the circle)
   for (int i = 0; i < scrollRects.length; i++) {
     if (i == selectedScrollRectIndex) {
-      drawRectNoStroke(scrollRects[i], #FF0000);
+      drawRectNoStroke(scrollRects[i], #FF0000, i);
     } else {
-      drawRectNoStroke(scrollRects[i], 255-10*i);
+      drawRectNoStroke(scrollRects[i], 255, i);
     }
   }
 }
@@ -173,7 +185,7 @@ void draw()
     fill(128);
     text("Phrase " + (currTrialNum+1) + " of " + totalTrialNum, 70, 50); //draw the trial count
     fill(255);
-    text("Target:   " + currentPhrase, 70, 100); //draw the target string
+    text(" Target:  " + currentPhrase, 70, 100); //draw the target string
     text("Entered:  " + currentTyped, 70, 140); //draw what the user has entered thus far 
     fill(255, 0, 0);
     rect(800, 00, 200, 200); //drag next button
@@ -219,6 +231,7 @@ void scrollPositionChanged()
       break;
     }
   }
+
 }
 
 void mousePressed()
