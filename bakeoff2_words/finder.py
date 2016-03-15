@@ -57,14 +57,17 @@ def formatAsJava(letters):
 	commonLetters.put("c", new char[] {'m','l'});
 	"""
 	code = ""
-	with open("fakejava.txt", "w") as f:
+	with open("fakejava2.txt", "w") as f:
 		for letter in letters:
 			code += "commonLetters.put(\"%s\", new char[] {" % (letter)
-			for i in xrange(len(letters[letter])):
-				code += "'%s'" % (letters[letter][i][0]) # letter itself
-				if i < len(letters[letter]) - 1:
-					code += ", "
-			code += "});\n"
+			for i in xrange(4):
+				code += "'%s', " % (letters[letter][i][0]) # letter itself
+			#	code += "'%s'" % (letters[letter][i][0]) # letter itself
+			# 	if i < len(letters[letter]) - 1:
+			# 		code += ", "
+			# code += "});\n"
+			# normal alphabet after first 4
+			code += "'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'});\n"
 		f.write(code)
 
 
