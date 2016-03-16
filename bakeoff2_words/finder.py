@@ -15,9 +15,10 @@ def writeToJSON():
 		for char2 in alphabet:
 			letters[char].append([char2, 0])
 	with open("100k.txt", "r") as f:
-		counter = 0
+		# counter = 0
 		for line in f:
 			cleanLine = line.split("\t")[0].lower()
+			frequency = line.split("\t")[1]
 			for i in xrange(len(cleanLine)):
 				# Check current and next letter
 				if i < len(cleanLine) - 1:
@@ -28,7 +29,7 @@ def writeToJSON():
 					# exists = False
 					for l in letters[currentLetter]:
 						if l[0] == nextLetter:
-							l[1] += 1
+							l[1] += int(frequency)
 							# exists = True
 							break
 					# if not exists: letters[currentLetter].append([nextLetter, 1])
@@ -37,7 +38,7 @@ def writeToJSON():
 
 
 			print cleanLine
-			counter += 1
+			# counter += 1
 			# if counter == 5000:
 				# break
 
@@ -57,7 +58,7 @@ def formatAsJava(letters):
 	commonLetters.put("c", new char[] {'m','l'});
 	"""
 	code = ""
-	with open("fakejava2.txt", "w") as f:
+	with open("fakejava.txt", "w") as f:
 		for letter in letters:
 			code += "commonLetters.put(\"%s\", new char[] {" % (letter)
 			for i in xrange(4):
