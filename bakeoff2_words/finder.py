@@ -10,10 +10,17 @@ def writeToJSON():
 
 	letters = {}
 	alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+	# based on one letter
 	for char in alphabet:
 		letters[char] = []
 		for char2 in alphabet:
 			letters[char].append([char2, 0])
+	# based on two letters
+	for char in alphabet:
+		for char2 in alphabet:
+			letters["%s%s" % (char, char2)] = []
+			for char3 in alphabet:
+				letters["%s%s" % (char, char2)].append([char3, 0])
 	with open("100k.txt", "r") as f:
 		# counter = 0
 		for line in f:
@@ -22,19 +29,24 @@ def writeToJSON():
 			for i in xrange(len(cleanLine)):
 				# Check current and next letter
 				if i < len(cleanLine) - 1:
+					# based on one letter
 					currentLetter = cleanLine[i]
 					nextLetter = cleanLine[i+1]
 					# if currentLetter not in letters: letters[currentLetter] = []
 					# search through array of following letters (only array to allow sorting)
-					# exists = False
 					for l in letters[currentLetter]:
 						if l[0] == nextLetter:
 							l[1] += int(frequency)
-							# exists = True
 							break
-					# if not exists: letters[currentLetter].append([nextLetter, 1])
-					# if nextLetter not in letters[currentLetter]: letters[currentLetter][nextLetter] = 1
-					# else: letters[currentLetter][nextLetter] += 1
+					# based on two letters
+					if i > 0: # check that letter is also not the first letter
+						currentTwoLetters = cleanLine[i-1:i+1]
+						# this is just coppied from above
+						for l in letters[currentTwoLetters]:
+							if l[0] == nextLetter:
+								l[1] += int(frequency)
+								break
+					
 
 
 			print cleanLine
