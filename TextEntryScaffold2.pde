@@ -339,10 +339,14 @@ void mouseDragged()
   {
     // shift all key rects
     int difference = mouseX - pmouseX;
-    for (int i = 0; i < qwerty.length; i++)
+    // set bounds on movement
+    if (qwerty[0].left + difference <= margin && qwerty[9].right + difference >= margin + tw*12)
     {
-      qwerty[i].left += difference;
-      qwerty[i].right += difference;
+      for (int i = 0; i < qwerty.length; i++)
+      {
+        qwerty[i].left += difference;
+        qwerty[i].right += difference;
+      }
     }
     dragging = true;
   }
