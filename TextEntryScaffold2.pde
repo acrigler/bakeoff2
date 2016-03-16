@@ -63,6 +63,10 @@ Rect auto2 = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
 Rect auto3 = new Rect(margin + tw*6, margin + tw*10, margin + tw*6, margin + tw*12);
 
 Rect[] qwerty = new Rect[26];
+char[] firstQwertyRow = {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'};
+char[] secondQwertyRow = {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'};
+char[] thirdQwertyRow = {'z', 'x', 'c', 'v', 'b', 'n', 'm'};
+String keyLetter;
 
 //char[] alphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 char[] lettersFull = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
@@ -78,13 +82,13 @@ void setup()
   int oldMarginLeft = margin - (tw*12/2); 
   int marginLeft = margin - (tw*12/2); 
   int keyCount = 0;
-  int numKeys = 10;
+  char[] qwertyRow = firstQwertyRow;
   for (int i = 0; i < rows; i++)
   {
-    if (i == 0) numKeys = 10;
-    else if (i == 1) numKeys = 9;
-    else if (i == 2) numKeys = 7;
-    for (int j = 0; j < numKeys; j++)
+    if (i == 0) qwertyRow = firstQwertyRow; // redundant
+    else if (i == 1) qwertyRow = secondQwertyRow;
+    else if (i == 2) qwertyRow = thirdQwertyRow;
+    for (int j = 0; j < qwertyRow.length; j++)
     {
       qwerty[keyCount] = new Rect(
                                   marginLeft,
@@ -93,11 +97,14 @@ void setup()
                                   marginTop + tw*2
                                   );
       marginLeft += (tw*2 + buttonMarginHalf * 2);
+      keyCount++;
     }
     marginTop += (tw*2 + buttonMarginBottom);
     // reset marginLeft
-    marginLeft = oldMarginLeft + tw;
+    if (i == 0) marginLeft = oldMarginLeft + tw + buttonMarginHalf*2;
+    else if (i == 1) marginLeft = oldMarginLeft + tw*3 + buttonMarginHalf*4;
   }
+  for (int i = 0; i < qwerty.length; i++) System.out.println(qwerty[i]);
   
   // can't map char as key, so need to cast when checking previous letter
   commonLetters.put("", new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'});
@@ -145,10 +152,10 @@ void drawRect(Rect r, int hex) {
   rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
 }
 
-void drawRect(Rect r, int hex, String input) {
+void drawRect(Rect r, int hex, String input, int marginTop) {
   drawRect(r, hex);
   fill(0);
-  text(input, (float)r.centerX(), (float)r.centerY()+25); //
+  text(input, (float)r.centerX(), (float)r.centerY() + marginTop); //
 }
 
 void draw()
@@ -158,12 +165,6 @@ void draw()
   drawRect(leftMask, 255);
   drawRect(rightMask, 255);
   drawRect(input, #808080); //input area should be 2" by 2"
-  
-  for (int i = 0; i < qwerty.length; i++) 
-  {
-    System.out.println(qwerty[i]);
-    //drawRect(qwerty[i], 0);
-  }
 
   if (finishTime!=0)
   {
@@ -199,7 +200,6 @@ void draw()
     fill(255);
     text("NEXT > ", 850, 100); //draw next label
 
-
     //my draw code
 
     textSize(70);
@@ -210,10 +210,17 @@ void draw()
     //}
 
     //Draw space and delete
-    drawRect(delete, #FFFFFF, "del");
-    drawRect(space, #FFFFFF, "_");
-    textSize(30);
-    //Draw scroll bar
+    drawRect(delete, #FFFFFF, "del", 25);
+    drawRect(space, #FFFFFF, "_", 20);
+    textSize(36);
+    
+    for (int i = 0; i < qwerty.length; i++) 
+    {
+      if (i < firstQwertyRow.length) keyLetter = String.valueOf(firstQwertyRow[i]);
+      else if (i < firstQwertyRow.length + secondQwertyRow.length) keyLetter = String.valueOf(secondQwertyRow[i-firstQwertyRow.length]);
+      else if (i < firstQwertyRow.length + secondQwertyRow.length + thirdQwertyRow.length) keyLetter = String.valueOf(thirdQwertyRow[i-firstQwertyRow.length-secondQwertyRow.length]);
+      drawRect(qwerty[i], 255, keyLetter, 12);
+    }
 
     fill(0, 255, 0);
   }
