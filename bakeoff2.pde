@@ -1,9 +1,10 @@
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 import android.graphics.Rect;
-import android.util.Log;
+import java.util.Map;
+import java.util.HashMap;
 import android.text.TextUtils;
+
 
 String[] phrases; //contains all of the phrases
 int totalTrialNum = 4; //the total number of phrases to be tested - set this low for testing. Might be ~10 for the real bakeoff!
@@ -16,59 +17,126 @@ float lettersExpectedTotal = 0; //a running total of the number of letters expec
 float errorsTotal = 0; //a running total of the number of errors (when hitting next)
 String currentPhrase = ""; //the current target phrase
 String currentTyped = ""; //what the user has typed so far
-final int DPIofYourDeviceScreen = 480; //you will need to look up the DPI or PPI of your device to make sure you get the right scale!!
+final int DPIofYourDeviceScreen = 424; //you will need to look up the DPI or PPI of your device to make sure you get the right scale!!
 //http://en.wikipedia.org/wiki/List_of_displays_by_pixel_density
 final int sizeOfInputArea = DPIofYourDeviceScreen*1; //aka, 1.0 inches square!
 final int tw = sizeOfInputArea/12; //Used because fractions confuse me
-final int margin = 200;
-String printoutput = "PRINT: \n";
+final int margin = 300;
+int buttonMarginBottom = tw / 4;
+int buttonMarginHalf = tw / 8;
+//boolean dragging = false;
+//Instead of boolean, use total distance from press to release to determine if dragged
+float initX, initY;
+
+// comment this out to disable highlighting of suggested next letters
+// only highlights 4 because I haven't written code that writes the entire CommonLetters.java class yet (manually broken up put calls)
+boolean showSuggested = true;
+String suggestionKey;
+
 int scrollLoc = 0;
-Rect input = new Rect(margin, margin, margin + tw*12, margin + tw*12);
-Rect delete = new Rect(margin, margin, margin + tw*6, margin + tw * 2);
-Rect space = new Rect(margin + tw * 6, margin, margin + tw * 12, margin + tw * 2);
-
-Rect[] rects = new Rect[4];
-Rect scroll = new Rect(margin, margin + tw*6, margin + tw*12, margin + tw*8);
-
+Rect input = new Rect(
+                      margin, 
+                      margin , 
+                      margin + tw*12, 
+                      margin + tw*12
+                      );
+                      
+Rect leftMask = new Rect(
+                          margin - tw*12,
+                          margin,
+                          margin,
+                          margin + tw*12
+                          );
+Rect rightMask = new Rect(
+                          margin + tw*12,
+                          margin,
+                          margin + tw*12 * 2,
+                          margin + tw*12
+                          );
+                          
+Rect delete = new Rect(
+                       margin, 
+                       margin + tw*10, 
+                       margin + tw*6 - buttonMarginHalf, 
+                       margin + tw * 12 - buttonMarginBottom
+                       );
+Rect space = new Rect(
+                      margin + tw * 6 + buttonMarginHalf, 
+                      margin + tw*10, 
+                      margin + tw * 12, 
+                      margin + tw * 12 - buttonMarginBottom
+                      );
+                      
 Rect[] auto = new Rect[4];
 
 
 int numAutocompleteOptions = 4;
 String[] wordlist;
 Autocomplete autocomplete;
+Rect qwertyBox;
 
+Rect[] qwerty = new Rect[26];
+char[] firstQwertyRow = {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'};
+char[] secondQwertyRow = {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'};
+char[] thirdQwertyRow = {'z', 'x', 'c', 'v', 'b', 'n', 'm'};
+String keyLetter;
+
+//char[] alphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 char[] lettersFull = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-int selectedScrollRectIndex = 0;
-Rect[] scrollRects = new Rect[23]; // 23 is number of shifts required to go from abcd to wxyz
-int letterScrollWidth = scroll.width() / (scrollRects.length + 2); // +2 instead of -1 to allow double width for 'a' and 'z'
 char[] letters = {'a', 'b', 'c', 'd'};
+String lastTypedLetter = "";
+Map<String, char[]> commonLetters = CommonLetters.getCommonLetters();
 //You can modify anything in here. This is just a basic implementation.
 void setup()
 {
+  // draw autocomplete options
   autocomplete = new Autocomplete(4);
-  
   autocomplete.addWords(loadStrings("worddata.txt"));
-  auto[0] = new Rect(margin, margin + tw*8, margin + tw*6, margin + tw*10);
-  auto[1] = new Rect(margin + tw*6, margin + tw*8, margin + tw*12, margin +tw*10);
-  auto[2] = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
-  auto[3] = new Rect(margin + tw*6, margin + tw*10, margin + tw*12, margin + tw*12);
-
-  for (int i = 0; i < 4; i++) {
-    rects[i] = new Rect(margin + (tw*3)*i, margin + (tw*2), margin + ((tw*3) * (i+1)), margin + tw*6);
-  }
-    
-  for (int i = 0; i < scrollRects.length; i++) {
-    if (i == 0) {
-      scrollRects[i] = new Rect(margin, margin + tw*6, margin + letterScrollWidth*2, margin + tw*8);
-    } else if (i == scrollRects.length -1) {
-      // scroll.width() - (int-->float conversion of letterScrollWidth) = 5, which is where that magic number comes from
-      scrollRects[i] = new Rect(margin + letterScrollWidth*(i+1), margin + tw*6, margin + letterScrollWidth*(i+3)+5, margin + tw*8);
-    } else {
-      scrollRects[i] = new Rect(margin + letterScrollWidth*(i+1), margin + tw*6, margin + letterScrollWidth*(i+2), margin + tw*8);
+  auto[0] = new Rect(margin, margin, margin + tw*6, margin + tw*2 - tw/2);
+  auto[1] = new Rect(margin + tw*6, margin, margin + tw*12, margin +tw*2 - tw/2);
+  auto[2] = new Rect(margin, margin + tw*2 - tw/2, margin + tw * 6, margin + tw*3);
+  auto[3] = new Rect(margin + tw*6, margin + tw*2 - tw/2, margin + tw*12, margin + tw*3 ); 
+  // draw qwerty keyboard
+  int rows = 3;
+  int marginTop = margin + 2*auto[0].height() + buttonMarginBottom; // change this to move whole qwerty keyboard
+  // initialize qwerty drag box based on marginTop (assumes height of 3 * tw*2 + 2 * buttonMarginBottom)
+  qwertyBox = new Rect(
+                        margin,
+                        marginTop,
+                        margin + tw*12,
+                        marginTop + 3 * tw*2 + 2 * buttonMarginBottom
+                        );
+  
+  
+  
+  int oldMarginLeft = margin - (tw*12/2); 
+  int marginLeft = margin - (tw*12/2); 
+  int keyCount = 0;
+  char[] qwertyRow = firstQwertyRow;
+  for (int i = 0; i < rows; i++)
+  {
+    if (i == 0) qwertyRow = firstQwertyRow; // redundant
+    else if (i == 1) qwertyRow = secondQwertyRow;
+    else if (i == 2) qwertyRow = thirdQwertyRow;
+    for (int j = 0; j < qwertyRow.length; j++)
+    {
+      qwerty[keyCount] = new Rect(
+                                  marginLeft,
+                                  marginTop,
+                                  marginLeft + tw*2,
+                                  marginTop + tw*2
+                                  );
+      marginLeft += (tw*2 + buttonMarginHalf * 2);
+      keyCount++;
     }
-    
-   //scrollRects[i] = new Rect(margin + letterScrollWidth*i, margin + tw*6, margin + letterScrollWidth*(i+1), margin + tw*8);
+    marginTop += (tw*2 + buttonMarginBottom);
+    // reset marginLeft
+    if (i == 0) marginLeft = oldMarginLeft + tw + buttonMarginHalf*2;
+    else if (i == 1) marginLeft = oldMarginLeft + tw*3 + buttonMarginHalf*4;
   }
+  
+  System.out.println(commonLetters.get("a"));
+  System.out.println(commonLetters.get("th"));
 
   phrases = loadStrings("phrases2.txt"); //load the phrase set into memory
   Collections.shuffle(Arrays.asList(phrases)); //randomize the order of the phrases
@@ -85,53 +153,25 @@ void drawRect(Rect r, int hex) {
   rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
 }
 
-// I don't feel like changing every instance of drawRect so I'm just making another one
-void drawRectNoStroke(Rect r, int val) {
-  fill(val);
+void drawInvisibleRect(Rect r) {
+  noFill();
   noStroke();
   rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
 }
 
-void drawRect(Rect r, int hex, String input) {
+void drawRect(Rect r, int hex, String input, int marginTop) {
   drawRect(r, hex);
   fill(0);
-  text(input, (float)r.centerX(), (float)r.centerY()+15); //
+  text(input, (float)r.centerX(), (float)r.centerY() + marginTop); //
 }
 
-void drawScroll(Rect r, int hex) {
-  //float xPos = scrollLoc;
-  drawRect(r, hex);
-  
-  // Note: we don't actually need to show this; just for debugging purposes at the moment (although it may be cool to highlight a bar instead of the circle)
-  for (int i = 0; i < scrollRects.length; i++) {
-    if (i == selectedScrollRectIndex) {
-      drawRectNoStroke(scrollRects[i], #FF0000);
-    } else {
-      drawRectNoStroke(scrollRects[i], 255-10*i);
-    }
-  }
-  // keep ellipse within bounds of box
-  //if (scrollLoc > scroll.left + 20 && scrollLoc < scroll.right - 20) xPos = scrollLoc;
-  //if (scrollLoc <= scroll.left) xPos = scroll.left + 20;
-  //else if (scrollLoc >= scroll.right) xPos = scroll.right - 20;
-  //fill(#FF0000);
-  //ellipse((float)xPos, (float)r.centerY(), 40, 40);
-  //for (int i = 0; i < 7; i++) {
-  //  fill(#808080);
-  //  if (i == scrollLoc) fill(#FF0000); 
-  //  ellipse((float)r.left+(tw*12/7) * i + 40, (float)r.centerY(), 20, 20);
-  //}
-}
-
-//You can modify anything in here. This is just a basic implementation.
 void draw()
 {
   background(0); //clear background
 
-  // image(watch,-200,200);
+  //drawRect(leftMask, 255); // for debug
+  //drawRect(rightMask, 255);
   drawRect(input, #808080); //input area should be 2" by 2"
-  
-  
 
   if (finishTime!=0)
   {
@@ -160,10 +200,8 @@ void draw()
     fill(128);
     text("Phrase " + (currTrialNum+1) + " of " + totalTrialNum, 70, 50); //draw the trial count
     fill(255);
-    text("Target:   " + currentPhrase, 70, 100); //draw the target string
+    text("Target:    " + currentPhrase, 70, 100); //draw the target string
     text("Entered:  " + currentTyped, 70, 140); //draw what the user has entered thus far 
-    
-    text(printoutput, 50, 800); 
     fill(255, 0, 0);
     rect(800, 00, 200, 200); //drag next button
     fill(255);
@@ -174,31 +212,80 @@ void draw()
     textSize(70);
     textAlign(CENTER);
     //Draw letters
-    for (int i = 0; i < 4; i++) {
-      drawRect(rects[i], #FFFFFF, ""+letters[i]);
-    }
+    //for (int i = 0; i < 4; i++) {
+    //  drawRect(rects[i], #FFFFFF, ""+letters[i]);
+    //}
 
     //Draw space and delete
-    drawRect(delete, #FFFFFF, "del");
-    drawRect(space, #FFFFFF, "_");
+    drawRect(delete, #FFFFFF, "del", 25);
+    drawRect(space, #FFFFFF, "_", 20);
+    textSize(36);
     
-    //draw autocomplete options
-    textSize(40);
-    for (int i = 0; i < 4; i++) {
-      drawRect(auto[i], #FFFFFF,   autocomplete.currentOptions[i] );
+    for (int i = 0; i < qwerty.length; i++) 
+    {
+      findKeyLetter(i);
+      // highlight if suggested
+      if (showSuggested) drawSuggested(i);
+      else drawRect(qwerty[i], 255, keyLetter, 12);
     }
+    //drawInvisibleRect(qwertyBox);
 
-    textSize(30);
-    //Draw scroll bar
-    drawScroll(scroll, #FFFFFF);
-    
-    
-    
-    fill(255, 0, 0);
-    //rect(200, 200, sizeOfInputArea/2, sizeOfInputArea/2); //draw left red button
     fill(0, 255, 0);
-    //rect(200+sizeOfInputArea/2, 200, sizeOfInputArea/2, sizeOfInputArea/2); //draw right green button
   }
+  //draw autocomplete options
+  textSize(40);
+  for (int i = 0; i < 4; i++) {
+    drawRect(auto[i], #FFFFFF,   autocomplete.currentOptions[i], tw/5 );
+  }
+
+  
+  drawRect(leftMask, 0);
+  drawRect(rightMask, 0);
+}
+
+void drawSuggested(int i)
+{
+  // check whether suggestions can be made for 1 or 2 letters
+  if (currentTyped.length() > 0 && !" ".equals(String.valueOf(currentTyped.charAt(currentTyped.length()-1))))
+  {
+    // suggestions can be made for 2 letters
+    if (currentTyped.length() >= 2 && !" ".equals(String.valueOf(currentTyped.charAt(currentTyped.length()-2))))
+    {
+      int lowerBound = 0;
+      if (currentTyped.length() > 2) lowerBound = currentTyped.charAt(currentTyped.length()-3); // can sometimes still be 0
+      suggestionKey = String.valueOf(currentTyped.charAt(currentTyped.length()-2)) + String.valueOf(currentTyped.charAt(currentTyped.length()-1));
+    }
+    // suggestions can be made for 1 letter
+    else suggestionKey = String.valueOf(currentTyped.charAt(currentTyped.length()-1));
+  }
+  // can't make suggestions for 1 or 2 letters
+  else suggestionKey = ""; // (not a real key)
+  
+  // loop through suggestions and color accordingly
+  if (suggestionKey.length() > 0)
+  {
+    char[] asl = commonLetters.get(suggestionKey);
+    boolean letterWasSuggested = false;
+    for (int j = 0; j < 4; j++)
+    {
+      if (keyLetter.equals(String.valueOf(asl[j])))
+      {
+        drawRect(qwerty[i], #E7FC28, keyLetter, 12);
+        letterWasSuggested = true;
+        break;
+      }
+    }
+    if (!letterWasSuggested) drawRect(qwerty[i], 255, keyLetter, 12);
+  }
+  else drawRect(qwerty[i], 255, keyLetter, 12);
+}
+
+// because I did this poorly
+void findKeyLetter(int i)
+{
+  if (i < firstQwertyRow.length) keyLetter = String.valueOf(firstQwertyRow[i]);
+  else if (i < firstQwertyRow.length + secondQwertyRow.length) keyLetter = String.valueOf(secondQwertyRow[i-firstQwertyRow.length]);
+  else if (i < firstQwertyRow.length + secondQwertyRow.length + thirdQwertyRow.length) keyLetter = String.valueOf(thirdQwertyRow[i-firstQwertyRow.length-secondQwertyRow.length]);
 }
 
 boolean didMouseClick(float x, float y, float w, float h) //simple function to do hit testing
@@ -208,45 +295,62 @@ boolean didMouseClick(float x, float y, float w, float h) //simple function to d
 
 void scrollPositionChanged()
 {
-  for (int i = 0; i < scrollRects.length; i++)
+  
+}
+
+void changeActiveLetters()
+{
+  //lettersFull = commonLetters.get(lastTypedLetter);
+  //System.out.println(Arrays.toString(lettersFull));
+  //letters = Arrays.copyOfRange(lettersFull, 0, 3);
+  
+  for (int i = 0; i < 4; i++) {
+    letters[i] = commonLetters.get(lastTypedLetter)[i];
+  }
+}
+
+void mouseReleased()
+{
+  if (dist(mouseX,mouseY,initX,initY) < tw/2 && !leftMask.contains(mouseX, mouseY) && !rightMask.contains(mouseX, mouseY)) // don't let keys be pressed when they are masked
   {
-    if (scrollRects[i].contains(mouseX, mouseY))
+    for (int i = 0; i < qwerty.length; i++)
     {
-      for (int j = 0; j < 4; j++) {
-        letters[j] = lettersFull[i+j];
-      }
-      selectedScrollRectIndex = i;
-      break;
+     if (qwerty[i].contains(mouseX, mouseY))
+     {
+       findKeyLetter(i);
+       currentTyped += keyLetter;
+       callAutocorrect();
+       break;
+     }
     }
   }
 }
 
 void mousePressed()
 {
-  for (int i = 0; i < 4; i++) {
-    if (rects[i].contains(mouseX, mouseY)) currentTyped += letters[i];
-  }
+
   if (space.contains(mouseX, mouseY)) {
     currentTyped+=" ";
+    //lastTypedLetter = " ";
+    //changeActiveLetters();
   }
   if (delete.contains(mouseX, mouseY)) {
-    currentTyped = currentTyped.substring(0, currentTyped.length()-1);
+    if (currentTyped.length() > 0) 
+    {
+      currentTyped = currentTyped.substring(0, currentTyped.length()-1);
+      //if (currentTyped.length() == 0) lastTypedLetter = "";
+      //else lastTypedLetter = currentTyped.substring(currentTyped.length()-1); // get previously typed letter
+    }
+    //changeActiveLetters();
   }
-  
   for (int i = 0 ; i < numAutocompleteOptions; i++ ) {
     if (auto[i].contains(mouseX, mouseY)) addRestOfWord(i);
   }
   if (currentTyped.length() > 0) callAutocorrect();
   
-  scrollPositionChanged();
-  
-  /*
-  if (letter1=="_") //if underscore, consider that a space bar
-   
-   else if (letter1=='`' & currentTyped.length()>0) //if `, treat that as a delete command
-   //currentTyped = currentTyped.substring(0, currentTyped.length()-1);
-   else if (letter1!='`') //if not any of the above cases, add the current letter to the typed string
-   currentTyped+=letter1;*/
+  initX = mouseX;
+  initY = mouseY;
+ 
 
   //You are allowed to have a next button outside the 2" area
   if (didMouseClick(800, 00, 200, 200)) //check if click is in next button
@@ -257,47 +361,49 @@ void mousePressed()
 void addRestOfWord(int i) {
   String[] words = currentTyped.split(" ");
   words[words.length-1] = autocomplete.currentOptions[i];
-  currentTyped = TextUtils.join(" ", words) + " ";
+  currentTyped = TextUtils.join(" ", words);
   callAutocorrect();
 }
 int counter = 0;
 
-
 void mouseDragged() 
 {
-  if (input.contains(mouseX, mouseY))
+  //if (input.contains(mouseX, mouseY)) scrollPositionChanged();
+  //scrollLoc = mouseX;
+  if (qwertyBox.contains(mouseX, mouseY)) 
   {
-    
-    scrollPositionChanged();
-    
-    //counter++;
-    //// indicator that user is moving in a particular direction
-    //// pmouseX = previous mouse x
-    //if (counter == 7) {
-    //  counter = 0;
-      
-      
-      
-    //  if (mouseX > pmouseX) //check if click in left button
-    //  {
-    //    for (int i = 0; i < 4; i++) {
-    //      letters[i] = (char((((int)letters[i] + 1 - 97) % 26) + 97));
-    //    }
-    //  }
-
-    //  if (mouseX < pmouseX) //check if click in right button
-    //  {
-    //    for (int i = 0; i < 4; i++) {
-    //      letters[i] = (char((((int)letters[i] - 1 - 97 + 26) % 26) + 97));
-    //    }
-    //  }
-    //}
+    // shift all key rects
+    int difference = mouseX - pmouseX;
+    // set bounds on movement
+    if (qwerty[0].left + difference <= margin && qwerty[9].right + difference >= margin + tw*12)
+    {
+      for (int i = 0; i < qwerty.length; i++)
+      {
+        qwerty[i].left += difference;
+        qwerty[i].right += difference;
+      }
+    }
   }
-  //scrollLoc = (((int)letters[0] - 97) % 26) / 4;
-  scrollLoc = mouseX;
+}
+
+String currentWord(String typed) {
+  if (typed.charAt(typed.length()-1) == ' ') return "";
+  String[] words = typed.split(" ");
+  System.out.println(words[words.length-1]);
+  return words[words.length - 1];
 }
 
 
+void callAutocorrect() {
+  String word = currentWord(currentTyped);
+  if (word != "") {
+    autocomplete.getCompletions(word);
+  } else {
+    for (int i = 0; i < numAutocompleteOptions; i++) {
+      autocomplete.currentOptions[i] = "";
+    }
+  }
+}
 
 void nextTrial()
 {
@@ -351,28 +457,7 @@ void nextTrial()
   //currentPhrase = "abc"; // uncomment this to override the test phrase (useful for debugging)
 }
 
-String currentWord(String typed) {
-  if (typed.charAt(typed.length()-1) == ' ') return "";
-  String[] words = typed.split(" ");
-  System.out.println(words[words.length-1]);
-  return words[words.length - 1];
-}
 
-
-void callAutocorrect() {
-  String word = currentWord(currentTyped);
-  if (word != "") {
-    autocomplete.getCompletions(word);
-  } else {
-    for (int i = 0; i < numAutocompleteOptions; i++) {
-      autocomplete.currentOptions[i] = "";
-    }
-  }
-}
-
-void androidPrint(String text) {
-  printoutput += text + "\n";
-}
 
 
 //=========SHOULD NOT NEED TO TOUCH THIS METHOD AT ALL!==============
