@@ -22,6 +22,7 @@ final int tw = sizeOfInputArea/12; //Used because fractions confuse me
 final int margin = 300;
 int buttonMarginBottom = tw / 4;
 int buttonMarginHalf = tw / 8;
+boolean dragging = false;
 
 int scrollLoc = 0;
 Rect input = new Rect(
@@ -62,6 +63,8 @@ Rect auto1 = new Rect(margin + tw*6, margin + tw*8, margin + tw*12, margin +tw*1
 Rect auto2 = new Rect(margin, margin + tw*10, margin + tw * 6, margin + tw*12);
 Rect auto3 = new Rect(margin + tw*6, margin + tw*10, margin + tw*6, margin + tw*12);
 
+Rect qwertyBox;
+
 Rect[] qwerty = new Rect[26];
 char[] firstQwertyRow = {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'};
 char[] secondQwertyRow = {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'};
@@ -78,7 +81,15 @@ void setup()
 {
   // draw qwerty keyboard
   int rows = 3;
-  int marginTop = margin + delete.height() + buttonMarginBottom;
+  int marginTop = margin + delete.height() + buttonMarginBottom; // change this to move whole qwerty keyboard
+  // initialize qwerty drag box based on marginTop (assumes height of 3 * tw*2 + 2 * buttonMarginBottom)
+  qwertyBox = new Rect(
+                        margin,
+                        marginTop,
+                        margin + tw*12,
+                        marginTop + 3 * tw*2 + 2 * buttonMarginBottom
+                        );
+                        
   int oldMarginLeft = margin - (tw*12/2); 
   int marginLeft = margin - (tw*12/2); 
   int keyCount = 0;
@@ -152,6 +163,12 @@ void drawRect(Rect r, int hex) {
   rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
 }
 
+void drawInvisibleRect(Rect r) {
+  noFill();
+  noStroke();
+  rect((float)r.left, (float)r.top, (float)r.width(), (float)r.height());
+}
+
 void drawRect(Rect r, int hex, String input, int marginTop) {
   drawRect(r, hex);
   fill(0);
@@ -162,8 +179,8 @@ void draw()
 {
   background(0); //clear background
 
-  drawRect(leftMask, 255);
-  drawRect(rightMask, 255);
+  //drawRect(leftMask, 255); // for debug
+  //drawRect(rightMask, 255);
   drawRect(input, #808080); //input area should be 2" by 2"
 
   if (finishTime!=0)
@@ -216,17 +233,24 @@ void draw()
     
     for (int i = 0; i < qwerty.length; i++) 
     {
-      if (i < firstQwertyRow.length) keyLetter = String.valueOf(firstQwertyRow[i]);
-      else if (i < firstQwertyRow.length + secondQwertyRow.length) keyLetter = String.valueOf(secondQwertyRow[i-firstQwertyRow.length]);
-      else if (i < firstQwertyRow.length + secondQwertyRow.length + thirdQwertyRow.length) keyLetter = String.valueOf(thirdQwertyRow[i-firstQwertyRow.length-secondQwertyRow.length]);
+      findKeyLetter(i);
       drawRect(qwerty[i], 255, keyLetter, 12);
     }
+    //drawInvisibleRect(qwertyBox);
 
     fill(0, 255, 0);
   }
   
-  //drawRect(leftMask, 0);
-  //drawRect(rightMask, 0);
+  drawRect(leftMask, 0);
+  drawRect(rightMask, 0);
+}
+
+// because I did this poorly
+void findKeyLetter(int i)
+{
+  if (i < firstQwertyRow.length) keyLetter = String.valueOf(firstQwertyRow[i]);
+  else if (i < firstQwertyRow.length + secondQwertyRow.length) keyLetter = String.valueOf(secondQwertyRow[i-firstQwertyRow.length]);
+  else if (i < firstQwertyRow.length + secondQwertyRow.length + thirdQwertyRow.length) keyLetter = String.valueOf(thirdQwertyRow[i-firstQwertyRow.length-secondQwertyRow.length]);
 }
 
 boolean didMouseClick(float x, float y, float w, float h) //simple function to do hit testing
@@ -236,18 +260,7 @@ boolean didMouseClick(float x, float y, float w, float h) //simple function to d
 
 void scrollPositionChanged()
 {
-  //for (int i = 0; i < scrollRects.length; i++)
-  //{
-  //  if (scrollRects[i].contains(mouseX, mouseY))
-  //  {
-  //    for (int j = 0; j < 4; j++) {
-  //      letters[j] = lettersFull[i+j];
-  //    }
-  //    selectedScrollRectIndex = i;
-  //    break;
-  //  }
-  //}
-
+  
 }
 
 void changeActiveLetters()
@@ -261,11 +274,26 @@ void changeActiveLetters()
   }
 }
 
+void mouseReleased()
+{
+  if (!dragging && !leftMask.contains(mouseX, mouseY) && !rightMask.contains(mouseX, mouseY)) // don't let keys be pressed when they are masked
+  {
+    for (int i = 0; i < qwerty.length; i++)
+    {
+     if (qwerty[i].contains(mouseX, mouseY))
+     {
+       findKeyLetter(i);
+       currentTyped += keyLetter;
+       break;
+     }
+    }
+  }
+  dragging = false;
+}
+
 void mousePressed()
 {
-  for (int i = 0; i < 4; i++) {
-    
-  }
+
   if (space.contains(mouseX, mouseY)) {
     currentTyped+=" ";
     //lastTypedLetter = " ";
@@ -280,7 +308,19 @@ void mousePressed()
     }
     //changeActiveLetters();
   }
-  
+  // only type if we're done dragging
+  if (!dragging)
+  {
+    //for (int i = 0; i < qwerty.length; i++)
+    //{
+    //  if (qwerty[i].contains(mouseX, mouseY))
+    //  {
+    //    findKeyLetter(i);
+    //    currentTyped += keyLetter;
+    //    break;
+    //  }
+    //}
+  }
 
   //You are allowed to have a next button outside the 2" area
   if (didMouseClick(800, 00, 200, 200)) //check if click is in next button
@@ -294,7 +334,18 @@ int counter = 0;
 void mouseDragged() 
 {
   //if (input.contains(mouseX, mouseY)) scrollPositionChanged();
-  scrollLoc = mouseX;
+  //scrollLoc = mouseX;
+  if (qwertyBox.contains(mouseX, mouseY)) 
+  {
+    // shift all key rects
+    int difference = mouseX - pmouseX;
+    for (int i = 0; i < qwerty.length; i++)
+    {
+      qwerty[i].left += difference;
+      qwerty[i].right += difference;
+    }
+    dragging = true;
+  }
 }
 
 
