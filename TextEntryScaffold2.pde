@@ -24,6 +24,11 @@ int buttonMarginBottom = tw / 4;
 int buttonMarginHalf = tw / 8;
 boolean dragging = false;
 
+// comment this out to disable highlighting of suggested next letters
+// only highlights 4 because I haven't written code that writes the entire CommonLetters.java class yet (manually broken up put calls)
+boolean showSuggested = true;
+String suggestionKey;
+
 int scrollLoc = 0;
 Rect input = new Rect(
                       margin, 
@@ -205,7 +210,9 @@ void draw()
     for (int i = 0; i < qwerty.length; i++) 
     {
       findKeyLetter(i);
-      drawRect(qwerty[i], 255, keyLetter, 12);
+      // highlight if suggested
+      if (showSuggested) drawSuggested(i);
+      else drawRect(qwerty[i], 255, keyLetter, 12);
     }
     //drawInvisibleRect(qwertyBox);
 
@@ -214,6 +221,43 @@ void draw()
   
   drawRect(leftMask, 0);
   drawRect(rightMask, 0);
+}
+
+void drawSuggested(int i)
+{
+  // check whether suggestions can be made for 1 or 2 letters
+  if (currentTyped.length() > 0 && !" ".equals(String.valueOf(currentTyped.charAt(currentTyped.length()-1))))
+  {
+    // suggestions can be made for 2 letters
+    if (currentTyped.length() >= 2 && !" ".equals(String.valueOf(currentTyped.charAt(currentTyped.length()-2))))
+    {
+      int lowerBound = 0;
+      if (currentTyped.length() > 2) lowerBound = currentTyped.charAt(currentTyped.length()-3); // can sometimes still be 0
+      suggestionKey = String.valueOf(currentTyped.charAt(currentTyped.length()-2)) + String.valueOf(currentTyped.charAt(currentTyped.length()-1));
+    }
+    // suggestions can be made for 1 letter
+    else suggestionKey = String.valueOf(currentTyped.charAt(currentTyped.length()-1));
+  }
+  // can't make suggestions for 1 or 2 letters
+  else suggestionKey = ""; // (not a real key)
+  
+  // loop through suggestions and color accordingly
+  if (suggestionKey.length() > 0)
+  {
+    char[] asl = commonLetters.get(suggestionKey);
+    boolean letterWasSuggested = false;
+    for (int j = 0; j < 4; j++)
+    {
+      if (keyLetter.equals(String.valueOf(asl[j])))
+      {
+        drawRect(qwerty[i], #E7FC28, keyLetter, 12);
+        letterWasSuggested = true;
+        break;
+      }
+    }
+    if (!letterWasSuggested) drawRect(qwerty[i], 255, keyLetter, 12);
+  }
+  else drawRect(qwerty[i], 255, keyLetter, 12);
 }
 
 // because I did this poorly
